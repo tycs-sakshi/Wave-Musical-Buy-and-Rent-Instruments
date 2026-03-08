@@ -12,7 +12,7 @@
     "data:import": "node seeder.js",
     "data:destroy": "node seeder.js -d",
     "seed": "node seeder.js",
-    "postinstall": "npx puppeteer browsers install chrome"
+    "postinstall": "node scripts/installPuppeteerBrowser.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

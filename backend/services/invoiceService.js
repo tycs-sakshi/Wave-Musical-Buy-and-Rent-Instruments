@@ -1,7 +1,23 @@
 import { BuyOrder } from "../models/buyOrderModel.js";
 import { RentOrder } from "../models/rentOrderModel.js";
 import nodemailer from "nodemailer";
+import path from "node:path";
 import "dotenv/config";
+
+const DEFAULT_PUPPETEER_CACHE_DIR = path.resolve(
+  process.cwd(),
+  ".cache",
+  "puppeteer"
+);
+const configuredPuppeteerCacheDir = String(
+  process.env.PUPPETEER_CACHE_DIR || ""
+).trim();
+const normalizedPuppeteerCacheDir =
+  configuredPuppeteerCacheDir && !configuredPuppeteerCacheDir.startsWith("/tmp")
+    ? configuredPuppeteerCacheDir
+    : DEFAULT_PUPPETEER_CACHE_DIR;
+
+process.env.PUPPETEER_CACHE_DIR = normalizedPuppeteerCacheDir;
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -56,15 +72,23 @@ const getInvoiceBrowser = async () => {
       launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
     }
 
-    invoiceBrowserPromise = puppeteer.launch(launchOptions);
-    invoiceBrowserPromise
+    invoiceBrowserPromise = puppeteer
+      .launch(launchOptions)
       .then((browser) => {
         browser.on("disconnected", () => {
           invoiceBrowserPromise = null;
         });
+        return browser;
       })
-      .catch(() => {
+      .catch((error) => {
         invoiceBrowserPromise = null;
+        const message = String(error?.message || "");
+        if (message.includes("Could not find Chrome")) {
+          throw new Error(
+            `Unable to generate invoice PDF because Chrome is not installed in Puppeteer cache (${process.env.PUPPETEER_CACHE_DIR}). Run backend postinstall on Render with the same cache path.`
+          );
+        }
+        throw error;
       });
   }
 

@@ -1,11 +1,19 @@
 import axios from "axios";
 
-const fallbackBaseUrl = `${process.env.REACT_APP_API_URL}/api/v1`;
+const DEFAULT_API_ORIGIN = "https://waves-musical.onrender.com";
+
+const normalizeBaseUrl = (rawValue) => {
+  const trimmedValue = String(rawValue || "").trim();
+  if (!trimmedValue) return `${DEFAULT_API_ORIGIN}/api/v1`;
+
+  const withoutTrailingSlash = trimmedValue.replace(/\/+$/, "");
+  return /\/api\/v1$/i.test(withoutTrailingSlash)
+    ? withoutTrailingSlash
+    : `${withoutTrailingSlash}/api/v1`;
+};
+
 const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
-const normalizedBaseUrl = (configuredBaseUrl || fallbackBaseUrl).replace(
-  /\/+$/,
-  ""
-);
+const normalizedBaseUrl = normalizeBaseUrl(configuredBaseUrl);
 
 const axiosClient = axios.create({
   baseURL: normalizedBaseUrl,
