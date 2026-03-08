@@ -1,6 +1,7 @@
 import { BuyOrder } from "../models/buyOrderModel.js";
 import { RentOrder } from "../models/rentOrderModel.js";
 import nodemailer from "nodemailer";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import "dotenv/config";
 
@@ -63,17 +64,43 @@ const getPuppeteer = async () => {
 const getInvoiceBrowser = async () => {
   const puppeteer = await getPuppeteer();
   if (!invoiceBrowserPromise) {
+    const configuredExecutablePath = String(
+      process.env.PUPPETEER_EXECUTABLE_PATH || ""
+    ).trim();
     const launchOptions = {
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     };
 
-    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    if (configuredExecutablePath && existsSync(configuredExecutablePath)) {
+      launchOptions.executablePath = configuredExecutablePath;
+    } else if (configuredExecutablePath) {
+      console.warn(
+        `[invoice] Ignoring invalid PUPPETEER_EXECUTABLE_PATH: ${configuredExecutablePath}`
+      );
     }
 
-    invoiceBrowserPromise = puppeteer
-      .launch(launchOptions)
+    const tryLaunchBrowser = async () => {
+      try {
+        return await puppeteer.launch(launchOptions);
+      } catch (error) {
+        const message = String(error?.message || "");
+        if (
+          launchOptions.executablePath &&
+          message.includes("configured executablePath")
+        ) {
+          console.warn(
+            `[invoice] Failed to launch using executablePath (${launchOptions.executablePath}). Falling back to Puppeteer managed Chrome.`
+          );
+          const fallbackLaunchOptions = { ...launchOptions };
+          delete fallbackLaunchOptions.executablePath;
+          return puppeteer.launch(fallbackLaunchOptions);
+        }
+        throw error;
+      }
+    };
+
+    invoiceBrowserPromise = tryLaunchBrowser()
       .then((browser) => {
         browser.on("disconnected", () => {
           invoiceBrowserPromise = null;
