@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const fallbackBaseUrl = "http://localhost:8000/api/v1";
+const fallbackBaseUrl = `${process.env.REACT_APP_API_URL}/api/v1`;
 const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const normalizedBaseUrl = (configuredBaseUrl || fallbackBaseUrl).replace(
   /\/+$/,
