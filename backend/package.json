@@ -11,7 +11,8 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "data:import": "node seeder.js",
     "data:destroy": "node seeder.js -d",
-    "seed": "node seeder.js"
+    "seed": "node seeder.js",
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
