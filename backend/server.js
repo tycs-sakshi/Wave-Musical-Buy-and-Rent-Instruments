@@ -24,6 +24,8 @@ app.use(
   cors({
     origin: "https://waves-musical-buy-and-rent-instrume.vercel.app/",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
 
