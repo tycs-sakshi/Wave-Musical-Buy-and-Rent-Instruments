@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(
   cors({
-    origin: "waves-musical-buy-and-rent-instruments-ebl9mh9mf.vercel.app",
+    origin: "https://waves-musical-buy-and-rent-instrume.vercel.app/",
     credentials: true,
   })
 );
