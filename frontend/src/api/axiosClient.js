@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const DEFAULT_API_ORIGIN = "https://waves-musical.onrender.com";
+const DEFAULT_API_ORIGIN = "https://wave-musical-buy-and-rent-instruments.onrender.com";
 
 const normalizeBaseUrl = (rawValue) => {
   const trimmedValue = String(rawValue || "").trim();
